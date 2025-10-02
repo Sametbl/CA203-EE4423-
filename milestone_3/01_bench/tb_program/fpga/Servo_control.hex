@@ -1,0 +1,102 @@
+# Register usage:
+# x1  = GPI address       (0x410)
+# x2  = PORTA address     (0x500)
+# x3  = input temp
+# x4  = pulse count (0 to 20)
+# x5  = delay loop
+# x6  = pulse_high counter (x6 * 500 us = HIGH time)
+# x7  = debounce counter (0 to 25, 20 ms steps)
+# x8  = constant 25 (for 500ms)
+# x9  = bit mask for bit 2 (0x4)
+# x10 = bit mask for bit 3 (0x8)
+# x11 = address for return from subroutine (link reg)
+
+        LUI   x1, 0x00000
+        ADDI  x1, x1, 0x410       # GPI input
+
+        LUI   x2, 0x00000
+        ADDI  x2, x2, 0x500       # PORTA output
+
+        ADDI  x6, x0, 10          # Initial angle = 10 * 50 us = 0.5 ms (middle)
+        ADDI  x7, x0, 0           # debounce counter
+        ADDI  x8, x0, 25          # debounce threshold = 20 * 25 ms = 500 ms
+        ADDI  x9, x0,  0x4        # mask bit 2
+        ADDI  x10, x0, 0x8        # mask bit 3
+
+MAIN_LOOP:
+        # === Part 1: Debounce check ===
+        BEQ   x7, x8, READ_INPUT   # If debounce counter == 25, read GPI  
+        JAL   x0,     SEND_PULSE   # Else Senc Servo control
+
+READ_INPUT:
+        LW    x3, 0(x1)           # Read GPI
+        AND   x3, x3, x9          # check bit 2
+        BEQ   x3, x0, CHECK_INC   # If LOW than check if bit 3 is HIGH
+        ADDI  x6, x6, -1          # Else it is HIGH and decrease the iteration of 50 us delay by one
+        BLT   x6, x0, CLAMP_MIN   # If the amount of 500us delay less than 0, then keep it at 0
+
+CHECK_INC:
+        LW    x3, 0(x1)           # Read GPI
+        AND   x3, x3, x10         # check bit 3
+        BEQ   x3, x0, RESET_DB    # If not HIGH then reset debounce counter and wait for next Read
+        ADDI  x6, x6, 1           # Else it is HIGH and increase the iteration of 50 us delay by one
+        ADDI  x3, x0, 20       
+        BGE   x6, x3, CLAMP_MAX   # Check if the amount of 50 us delay iteration is more than 20 (1ms)  
+        JAL   x0, RESET_DB        # If not reset the Debounce coutner
+
+CLAMP_MIN:
+        ADDI  x6, x0, 0
+        JAL   x0, RESET_DB
+
+CLAMP_MAX:
+        ADDI  x6, x0, 20
+        JAL   x0, RESET_DB
+
+RESET_DB:
+        ADDI  x7, x0, 0           # reset debounce counter
+
+SEND_PULSE:
+        ADDI  x3, x0, 0x8         # x3 = bit 3 mask
+        SW    x3, 0(x2)           # set bit 3 HIGH of the GPO (start servo control signal)
+        ADDI  x4, x0, 0           # x4 = counter for amount of 50 us delay
+
+        ADDI  x20, x0, 20         # Base 1ms (20 * 50 us) delay for 0 degree turns 
+        ADD   x20, x20, x6        # The amount of 5% degree increment (50 us)
+DELAY_HIGH: 
+        JAL   x11, DELAY_50US     # delay for 50 us (5% of the pulse) + 1 ms 
+        ADDI  x4, x4, 1           
+        BLT   x4, x20, DELAY_HIGH  
+
+        SW    x0, 0(x2)           # set bit 3 LOW (stop the servo control signal)
+
+
+        ADDI  x4, x0, 0           # Delay LOW for (380 - x6) * 50 us (19 ms - x6 * 50 us) 
+DELAY_LOW:
+        ADDI  x3, x0, 40
+        SUB   x3, x3, x6
+        BLT   x4, x3, LOW_LOOP
+        JAL   x0, NEXT
+
+LOW_LOOP:
+        JAL   x11, DELAY_50US    # Jump to 500us delay subroutine (x11 is return address)
+        ADDI  x4, x4, 1
+        JAL   x0, DELAY_LOW
+
+NEXT:
+        ADDI  x7, x7, 1           # increment debounce counter
+        JAL   x0, MAIN_LOOP
+
+
+# -----------------------
+# Subroutine: DELAY_500US
+# -----------------------
+# Uses: x5 as inner delay loop counter
+# Assumes 1 cycle = 20 ns (50 MHz clock)
+# 500 us = 25,000 cycles
+
+DELAY_50US:
+        LI  x5, 5       # outer loop (x2 = 2 cycle loop)
+LOOP_50US:
+        ADDI  x5, x5, -1
+        BNE   x5, x0, LOOP_50US
+        JALR  x0, x11, 0          # return (RET)

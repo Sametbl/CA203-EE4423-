@@ -1,0 +1,58 @@
+        # Register usage:
+        # x1  = GPI base addr (TRIG)    = 0x410
+        # x2  = GPO PORTA addr (ECHO)   = 0x500
+        # x3  = temp register
+        # x4  = delay counter (~1 us)
+        # x5  = pulse_us counter
+        # x6  = result distance (cm)
+        # x7  = delay loop (1 ms)
+        # x8  = divisor constant (58)
+        # x9  = division temp
+        # x10 = unused
+        # x11 = quotient
+
+
+
+
+
+
+
+00 00 00 B7 #                 LUI   x1, 0x00000            # 0                                                                                                                                                                                                                                                    
+41 00 80 93 #                 ADDI  x1, x1, 0x410          # 4     # GPI for ECHO (write trigger)                                                                                                                                                 
+00 00 01 37 #                 LUI   x2, 0x00000            # 8                                                                                                                                            
+50 01 01 13 #                 ADDI  x2, x2, 0x500          # 12    # PORTA = TRIGGER                                                                                                                                                      
+00 10 04 13 #                 ADDI  x8, x0, 29             # 16    # divisor constant                                                                                                                                                     
+00 10 01 93 # LOOP:           ADDI  x3, x0, 1              # 20    # === Trigger pulse                                                                                                                                                    
+00 31 20 23 #                 SW    x3, 0(x2)              # 24    # TRIG HIGH                                                                                                                                                    
+07 D0 02 13 #                 ADDI  x4, x0, 125            # 28    # ~10 us delay                                                                                                                                                 
+FF F2 02 13 # delay_trig:     ADDI  x4, x4, -1             # 32                                                                                                                                           
+FE 02 5E E3 #                 BGE   x4, x0, delay_trig     # 36                                                                                                                                                           
+00 01 20 23 # trig_off:       SW  x0, 0(x2)                # 40                                                                                                                                   
+00 01 22 03 #                 LW  x4, 0(x2)                # 44                                                                                                                                   
+FE 02 1C E3 #                 BNE x4, x0, trig_off         # 48                                                                                                                                                   
+00 00 A1 83 # wait_echo_high: LW    x3, 0(x1)              # 52    # read from GPI                                                                                                                                                        
+00 11 F1 93 #                 ANDI  x3, x3, 1              # 56                                                                                                                                           
+FE 01 8C E3 #                 BEQ   x3, x0, wait_echo_high # 60    # === Wait for ECHO HIGH ===                                                                                                                                                   
+00 00 02 93 #                 ADDI  x5, x0, 0              # 64    # === Count ECHO HIGH duration ===                                                                                                                                                     
+00 00 A1 83 # measure_loop:   LW    x3, 0(x1)              # 68    # read from GPI                                                                                                                                                        
+00 11 F1 93 #                 ANDI  x3, x3, 1              # 72                                                                                                                                   
+00 01 8C 63 #                 BEQ   x3, x0, done_measure   # 76                                                                                                                                                   
+01 90 02 13 #                 ADDI  x4, x0, 25             # 80    # ~1 us delay                                                                                                                                                  
+FF F2 02 13 # delay_1us:      ADDI  x4, x4, -1             # 84                                                                                                                                           
+FE 02 1E E3 #                 BNE   x4, x0, delay_1us      # 88                                                                                                                                           
+00 12 82 93 #                 ADDI  x5, x5, 1              # 92    # pulse_us++                                                                                                                                                   
+FE 5F F0 6F #                 JAL   x0, measure_loop       # 96                                                                                                                                           
+00 00 03 13 # done_measure:   ADDI  x6, x0, 0              # 100   # === Convert time to distance_cm = pulse_us / 58 ===                                                                                                                                                  
+00 02 84 93 #                 ADDI  x9, x5, 0              # 104                                                                                                                                  
+00 84 C8 63 # div_loop:       BLT   x9, x8, div_done       # 108                                                                                                                                          
+40 84 84 B3 #                 SUB   x9, x9, x8             # 112                                                                                                                                          
+00 13 03 13 #                 ADDI  x6, x6, 1              # 116                                                                                                                                  
+FF 5F F0 6F #                 JAL   x0, div_loop           # 120                                                                                                                                          
+00 00 01 B7 # div_done:       LUI   x3, 0x00000            # 124   # === Write to PORTB (0x510) ===                                                                                                                                                       
+51 01 81 93 #                 ADDI  x3, x3, 0x510          # 128                                                                                                                                          
+00 61 A0 23 #                 SW    x6, 0(x3)              # 132                                                                                                                                  
+00 00 03 B7 #                 LUI   x7, 0x0000C            # 136   # === Delay ===                                                                                                                                                        
+35 03 83 93 #                 ADDI  x7, x7, 0x350          # 140                                                                                                                                          
+FF F3 83 93 # delay_1ms:      ADDI  x7, x7, -1             # 144                                                                                                                                          
+FE 03 DE E3 #                 BNE   x7, x0, delay_1ms      # 148                                                                                                                                          
+F7 DF F0 6F #                 JAL   x0, LOOP               # 152                                                                                                                                  

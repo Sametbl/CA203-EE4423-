@@ -1,0 +1,17 @@
+00 00 00 B7 #             LUI   x1,     0x00000       # 0                                                                  
+00 00 01 37 #             LUI   x2,     0x00000       # 4                                  
+41 00 80 93 #             ADDI  x1, x1, 0x410         # 8                                  
+50 01 01 13 #             ADDI  x2, x2, 0x500         # 12                                  
+00 00 A1 83 # LOOP:       LW    x3, 0(x1)             # 16                                 
+00 11 F1 93 #             ANDI  x3, x3, 0x1           # 20                                  
+00 01 88 63 #             BEQ   x3, x0, ir_low        # 24                                  
+00 10 02 93 #             ADDI  x5, x0, 0x1           # 28                                  
+00 51 20 23 #             SW    x5, 0(x2)             # 32                                  
+00 C0 00 6F #             JAL   x0, delay             # 36                                  
+00 20 02 93 # ir_low:     ADDI  x5, x0, 0x2           # 40                                  
+00 51 20 23 #             SW    x5, 0(x2)             # 44                                  
+00 00 02 37 # delay:      LUI   x4, 0x00000           # 48                                  
+02 02 02 13 #             ADDI  x4, x4, 0x20          # 52                                  
+FF F2 02 13 # delay_loop: ADDI  x4, x4, -1            # 56                                  
+FE 02 1E E3 #             BNE   x4, x0, delay_loop    # 60                                  
+FD 1F F0 6F #             JAL   x0, LOOP              # 64                          

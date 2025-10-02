@@ -1,0 +1,30 @@
+00 00 40 B7          LUI   x1, 0x00004      # 0                                                                                                                                                              
+00 40 D0 93          SRLI  x1, x1, 4        # 4     # Switch MEM Address                                                                                            
+00 00 51 37          LUI   x2, 0x00005      # 8                                                                                                 
+00 41 51 13          SRLI  x2, x2, 4        # 12    # PORT A Address (OUTPUT)                                                           
+01 01 01 93          ADDI  x3, x2, 0x10     # 16    # PORT B Address (OUTPUT)                                                           
+02 01 02 13          ADDI  x4, x2, 0x20     # 20    # PORT C Address (OUTPUT)                                                           
+03 01 02 93          ADDI  x5, x2, 0x30     # 24    # PORT D Address (OUTPUT)                                                               
+00 00 85 03 LOOP:    LB    x10, 0(x1)       # 28    # Signed byte                                                                               
+00 00 C5 83          LBU   x11, 0(x1)       # 32    # Unsigned byte                                                                             
+00 00 96 03          LH    x12, 0(x1)       # 36    # Signed halfword                                                                           
+00 00 D6 83          LHU   x13, 0(x1)       # 40    # Unsigned halfword                                                                         
+00 A1 20 23          SW    x10, 0(x2)       # 44    # Port A  @ 0x500                                                                           
+00 B1 A0 23          SW    x11, 0(x3)       # 48    # Port B  @ 0x510                                                                           
+00 C2 20 23          SW    x12, 0(x4)       # 52    # Port C  @ 0x520                                                                           
+00 D2 A0 23          SW    x13, 0(x5)       # 56    # Port D  @ 0x530                                                                           
+00 07 A3 B7          LUI   x7, 0x07A        # 60    # x7 = 0x07A                                                                                
+12 03 83 93          ADDI  x7, x7, 0x120    # 64    # x7 = x7 + 0x120 → x7 = 500000                                                             
+FF F3 83 93 DELAY:   ADDI  x7, x7, -1       # 68                                                                                                
+FE 03 9E E3          BNE   x7, x0, DELAY    # 72    # Loop until x7 == 0                                                                        
+FD 1F F0 6F          JAL   x0, LOOP         # 76    # Jump back to LOOP                                                                         
+         
+
+
+# x1:  = input base address  (0x00000400)
+# x2:  = output base address (0x00000500)
+# x3:  = data LB
+# x4:  = data LBU
+# x5:  = data LH
+# x6:  = data LHU
+# x7:  = delay counter

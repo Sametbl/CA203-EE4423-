@@ -1,0 +1,12 @@
+06 10 00 93   #  START: ADDI x1, x0, 97      # R1 = A = 98                                                         
+01 70 01 13   #         ADDI x2, x0, 23      # R2 = B = 63                                                         
+00 00 01 93   #         ADDI x3, x0, 0       # R3 = RESULT = 0                                                         
+00 00 8A 63   #         BEQ  x1, x0, DONE    # If R1 == 0 || R2 == 0  Then R3 = 0                                                          
+00 01 08 63   #         BEQ  x2, x0, DONE                                                          
+00 11 81 B3   #  LOOP:  ADD  x3, x3, x1      # RESULT = RESULT + A                                                         
+FF F1 01 13   #         ADDI x2, x2, -1      # R2 = R2 - 1                                                             
+FE 01 1C E3   #         BNE  x2, x0,  LOOP   # If B != 0, repeat LOOP                                                          
+0D EA D0 37   #  DONE:  LUI  x0, 0xDEAD      # A x B = 97 x 23 = 2231                                                          
+FF DF F0 6F   #         JAL  x0, DONE                                                                                                                           
+
+

@@ -1,0 +1,66 @@
+93 00  00  00  #             ADDI    x1, x0, 0            # 0     # x1 = 0x00000000 (counter)                       
+13 01  50  00  #             ADDI    x2, x0, 5            # 4     # x2 = 0x00000005 (limit)                         
+93 80  10  00  # beq_loop:   ADDI    x1, x1, 1            # 8     # x1++                                            
+63 84  20  00  #             BEQ     x1, x2, beq_exit     # 12    # if x1 == x2 → exit                              
+6F F0  9F  FF  #             JAL     x0, beq_loop         # 16    # loop back                                       
+B7 01  AD  DE  # beq_exit:   LUI     x3, 0xDEAD0          # 20    # x3 = 0xDEAD0000 (after loop)                    
+93 81  11  00  #             ADDI    x3, x3, 1            # 24    # ------------------------------------------------
+13 02  00  00  #             ADDI    x4, x0, 0            # 28    # x4 = 0x00000000 (counter)                       
+93 02  50  00  #             ADDI    x5, x0, 5            # 32    # x5 = 0x00000005 (limit)                         
+13 02  12  00  # bne_loop:   ADDI    x4, x4, 1            # 36    # x4++                                            
+E3 1E  52  FE  #             BNE     x4, x5, bne_loop     # 40    # while x4 != x5                                  
+37 03  AD  DE  #             LUI     x6, 0xDEAD0          # 44    # x6 = 0xDEAD0000 (after loop)                    
+13 03  23  00  #             ADDI    x6, x6, 2            # 48    # ------------------------------------------------
+93 03  00  00  #             ADDI    x7, x0, 0            # 52    # x7 = 0x00000000 (counter)                       
+13 04  50  00  #             ADDI    x8, x0, 5            # 56    # x8 = 0x00000005 (limit)                         
+93 83  13  00  # blt_loop:   ADDI    x7, x7, 1            # 60    # x7++                                            
+E3 CE  83  FE  #             BLT     x7, x8, blt_loop     # 64    # while x7 < x8   (signed)                        
+B7 04  AD  DE  #             LUI     x9, 0xDEAD0          # 68    # x9 = 0xDEAD0000 (after loop)                    
+93 84  34  00  #             ADDI    x9, x9, 3            # 72    # ------------------------------------------------
+13 05  50  00  #             ADDI    x10, x0, 5           # 76    # x10 = 0x00000005 (counter)                      
+93 05  00  00  #             ADDI    x11, x0, 0           # 80    # x11 = 0x00000000 (limit)                        
+13 05  F5  FF  # bge_loop:   ADDI    x10, x10, -1         # 84    # x10--                                           
+E3 5E  B5  FE  #             BGE     x10, x11, bge_loop   # 88    # while x10 >= x11 (signed)                       
+37 06  AD  DE  #             LUI     x12, 0xDEAD0         # 92    # x12 = 0xDEAD0000 (after loop)                   
+13 06  46  00  #             ADDI    x12, x12, 4          # 96    # ------------------------------------------------
+93 06  00  00  #             ADDI    x13, x0, 0           # 100   # x13 = 0x00000000 (counter)                      
+13 07  50  00  #             ADDI    x14, x0, 5           # 104   # x14 = 0x00000005 (limit)                        
+93 86  16  00  # bltu_loop:  ADDI    x13, x13, 1          # 108   # x13++                                           
+E3 EE  E6  FE  #             BLTU    x13, x14, bltu_loop  # 112   # while x13 < x14  (unsigned)                     
+B7 07  AD  DE  #             LUI     x15, 0xDEAD0         # 116   # x15 = 0xDEAD0000 (after loop)                   
+93 87  57  00  #             ADDI    x15, x15, 5          # 120   # ------------------------------------------------
+13 08  50  00  #             ADDI    x16, x0, 5           # 124   # x16 = 0x00000005 (counter)                      
+93 08  10  00  #             ADDI    x17, x0, 1           # 128   # x17 = 0x00000001 (limit)                        
+13 08  F8  FF  # bgeu_loop:  ADDI    x16, x16, -1         # 132   # x16--                                           
+E3 7E  18  FF  #             BGEU    x16, x17, bgeu_loop  # 136   # while x16 >= x17 (unsigned)                     
+37 09  AD  DE  #             LUI     x18, 0xDEAD0         # 140   # x18 = 0xDEAD0000 (after loop)                   
+13 09  69  00  #             ADDI    x18, x18, 6          # 144   # ------------------------------------------------
+97 09  00  00  #             AUIPC   x19, 0               # 148   # x19 = PC = 148                              
+93 89  89  01  #             ADDI    x19, x19, 24         # 152   # x19 = 172 (return address for JALR)             
+6F 0A  00  02  #             JAL     x20, jal_target      # 156   # x20 = PC+4 = 160 (jump to target)               
+B7 0A  AD  DE  # jal_return: LUI     x21, 0xDEAD0         # 160   # x21 = 0xDEAD0000 (return OK from JAL)           
+93 8A  7A  00  #             ADDI    x21, x21, 7          # 164   # x21 = 0xDEAD0007                                
+67 8B  09  00  #             JALR    x22, x19, 0          # 168   # x22 = 172 (Jump to x19 = 172)      
+B7 0B  AD  DE  #             LUI     x23, 0xDEAD0         # 172   # x23 = 0xDEAD0       
+93 8B  8B  00  #             ADDI    x23, x23, 8          # 176   # x23 = 0xDEAD0008 
+13 0B  4B  01  #             ADDI    x22, x22, 20         # 180   # x22 = 172 + 20 = 192  
+67 00  0B  00  #             JALR    x0,  x22, 0          # 184   # Jump to Pass_loop (PC = 192)                          
+67 00  0A  00  # jal_target: JALR    x0,  x20, 0          # 188   # Return using x20 (simulate function return)     
+93 01  10  00  # pass_loop:  ADDI    x3,  x0,  1          # 192   # x3 = 1 → FINAL PASS FLAG                         
+6F F0  DF  FF  #             JAL     x0,  pass_loop       # 196   # stay here forever (simulation can detect x3==1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

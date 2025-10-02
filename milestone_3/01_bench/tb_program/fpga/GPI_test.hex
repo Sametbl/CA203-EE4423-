@@ -1,0 +1,19 @@
+ 00 00 00 B7 #         LUI   x1, 0x00000
+ 41 00 80 93 #         ADDI  x1, x1, 0x410       # x1 = GPI address (0x410)                                                                                                                                                                                 
+ 00 00 01 37 #         LUI   x2, 0x00000                                                                                                                            
+ 50 01 01 13 #         ADDI  x2, x2, 0x500       # x2 = PORTA                                                                                                                               
+ 00 00 01 B7 #         LUI   x3, 0x00000                                                                                                                            
+ 51 01 81 93 #         ADDI  x3, x3, 0x510       # x3 = PORTB                                                                                                                               
+ 00 00 02 37 #         LUI   x4, 0x00000                                                                                                                            
+ 52 02 02 13 #         ADDI  x4, x4, 0x520       # x4 = PORTC                                                                                                                               
+ 00 00 02 B7 #         LUI   x5, 0x00000                                                                                                                            
+ 53 02 82 93 #         ADDI  x5, x5, 0x530       # x5 = PORTD                                                                                                                               
+ 00 00 83 03 # loop:   LB    x6, 0(x1)           # Load Byte  (signed)     from GPI                                                                                                                         
+ 00 61 20 23 #         SW    x6, 0(x2)           # Write to PORTA                                                                                                                           
+ 00 00 C3 83 #         LBU   x7, 0(x1)           # Load Byte  (unsigned)   from GPI                                                                                                                         
+ 00 71 A0 23 #         SW    x7, 0(x3)           # Write to PORTB                                                                                                                           
+ 00 00 94 03 #         LH    x8, 0(x1)           # Load Halfword (signed)  from GPI                                                                                                                         
+ 00 82 20 23 #         SW    x8, 0(x4)           # Write to PORTC                                                                                                                           
+ 00 00 D4 83 #         LHU   x9, 0(x1)           # Load Halfword (unsigned) from GPI                                                                                                                                
+ 00 92 A0 23 #         SW    x9, 0(x5)           # Write to PORTD                                                                                                                           
+ FE 1F F0 6F #         JAL   x0, loop            # Repeat forever                                                                                                                           

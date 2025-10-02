@@ -1,0 +1,11 @@
+
+tempCodeRunnerFile.*
+*.log
+*.vcd
+*.fsdb
+
+03_quartus/*
+!03_quartus/*.qpf
+
+
+*.obsidian/

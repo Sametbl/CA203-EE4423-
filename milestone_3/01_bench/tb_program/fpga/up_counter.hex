@@ -1,0 +1,27 @@
+00 00 00 B7 #                 LUI   x1, 0x00000        # 0                                                                                                                                                      
+40 00 80 93 #                 ADDI  x1, x1, 0x400      # 4    # x1 = address of switch (input X)                                                                            
+00 00 01 37 #                 LUI   x2, 0x00000        # 8                                                                      
+50 01 01 13 #                 ADDI  x2, x2, 0x500      # 12   # PORT A (LW)                                                                         
+00 00 01 B7 #                 LUI   x3, 0x00000        # 16                                                                     
+51 01 81 93 #                 ADDI  x3, x3, 0x510      # 20   # PORT B (LH)                                                                         
+00 00 02 37 #                 LUI   x4, 0x00000        # 24                                                                     
+52 02 02 13 #                 ADDI  x4, x4, 0x520      # 28   # PORT C (LB)                                                                         
+00 00 02 B7 #                 LUI   x5, 0x00000        # 32                                                                     
+53 02 82 93 #                 ADDI  x5, x5, 0x530      # 36   # PORT D (count + 1)                                                                          
+00 00 03 13 #                 ADDI  x6, x0, 0          # 40   # x6 = counter (increment by X)                                                                           
+00 00 73 93 #                 ANDI  x7, x0, 0          # 44   # x7 = counter (increment by 1)                                                                           
+00 00 A4 03 # LOOP:           LW    x8,  0(x1)         # 48   # Load X from switch                                                                          
+00 83 03 33 #                 ADD   x6, x6, x8         # 52   # count += X                                                                          
+00 61 20 23 #                 SW    x6,  0(x2)         # 56   # store to PORT A (full 32-bit)                                                                           
+00 61 90 23 #                 SH    x6,  0(x3)         # 60   # store to PORT B (lower half)                                                                            
+00 62 00 23 #                 SB    x6,  0(x4)         # 64   # store to PORT C (lower byte)                                                                            
+00 13 83 93 #                 ADDI  x7, x7, 1          # 68   # count + 1 for PORT D                                                                            
+00 72 A0 23 #                 SW    x7,  0(x5)         # 72   # store to PORT D                                                                         
+00 00 04 37 #                 LUI   x8, 0x00262        # 76   # upper = 0x4C = 76k                                                                          
+4B 04 04 13 #                 ADDI  x8, x8, 0x5A0      # 80   # final = 0x4C4B0 = 5,000,000                                                                         
+FF F4 04 13 # delay_loop:     ADDI  x8, x8, -1         # 84                                                                     
+FE 04 1E E3 #                 BGE   x8, x0, delay_loop # 88     
+            #                 ADDI  x0, x0 , 0         # 92
+            #                 ADDI  x0, x0 , 0         # 96
+            #                 ADDI  x0, x0 , 0         # 100
+FD 5F F0 6F #                 JAL   x0, LOOP           # 104/   # Repeat forever                                                                          
