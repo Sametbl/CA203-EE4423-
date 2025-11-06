@@ -55,25 +55,25 @@ end
 // Next-state logic
 always_comb begin : VENDING_FSM
     case (current_state)
-        ZERO:       if      (i_nickle )    next_state = FIVE;
+        ZERO:       if      (i_quarter)    next_state = TWENTY_FIVE;
                     else if (i_dime   )    next_state = TEN;
-                    else if (i_quarter)    next_state = TWENTY_FIVE;
+                    else if (i_nickle )    next_state = FIVE;
                     else                   next_state = ZERO;
 
-        FIVE:       if      (i_nickle )    next_state = TEN;
+        FIVE:       if      (i_quarter)    next_state = THIRTY;
                     else if (i_dime   )    next_state = FIFTEEN;
-                    else if (i_quarter)    next_state = THIRTY;
+                    else if (i_nickle )    next_state = TEN;
                     else                   next_state = FIVE;
 
 
-        TEN:        if      (i_nickle )    next_state = FIFTEEN;
+        TEN:        if      (i_quarter)    next_state = THIRTY_FIVE;
                     else if (i_dime   )    next_state = TWENTY;
-                    else if (i_quarter)    next_state = THIRTY_FIVE;
+                    else if (i_nickle )    next_state = FIFTEEN;
                     else                   next_state = TEN;
 
-        FIFTEEN:    if      (i_nickle )    next_state = TWENTY;
+        FIFTEEN:    if      (i_quarter)    next_state = FORTY;
                     else if (i_dime   )    next_state = TWENTY_FIVE;
-                    else if (i_quarter)    next_state = FORTY;
+                    else if (i_nickle )    next_state = TWENTY;
                     else                   next_state = FIFTEEN;
 
 
